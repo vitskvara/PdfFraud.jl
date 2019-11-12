@@ -1,0 +1,315 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.MessageOptions {
+    string python_data_class = 51234;
+}
+
+message PdfSampleRaw {
+    option (python_data_class) = "bp_forjerry.core.PdfSample";
+
+    message SampleId {
+        option (python_data_class) = "bp_monitoring.base.core.SampleId";
+
+        string customer_id = 1;
+        string batch_id = 2;
+        float timestamp = 3;
+        string uuid = 4;
+    }
+
+    message BoundingBox {
+        option (python_data_class) = "bp_forjerry.miner_dataclasses.BoundingBox";
+
+        float x = 1;
+        float y = 2;
+        float width = 3;
+        float height = 4;
+    }
+
+    message MultiObj {
+        option (python_data_class) = "bp_forjerry.static.multiple_objects_detection.MultiObj";
+
+        message MultiObjOcc {
+            option (python_data_class) = "bp_forjerry.static.multiple_objects_detection.MultiObjOcc";
+
+            uint32 gen_id = 1;
+            uint64 byte_position = 2;
+            map<string, string> attributes = 3;
+        }
+
+        uint32 obj_id = 1;
+        repeated MultiObjOcc occurrences = 2;
+        bool occ_differs = 3;
+    }
+
+    message Page {
+        option (python_data_class) = "bp_forjerry.core.Page";
+
+        message Overlap {
+            option (python_data_class) = "bp_forjerry.core_extractors.annotation_over_text.Overlap";
+
+            uint32 page = 1;
+            string hidden_text = 2;
+            BoundingBox bbox = 3;
+            string replacement_text = 4;
+        }
+
+        message TextAppend {
+            option (python_data_class) = "bp_forjerry.static.word_append_detection.TextComparison";
+
+            message WordBoundingBox {
+                option (python_data_class) = "bp_forjerry.static.word_append_detection.WordComparison";
+
+                string word = 1;
+                BoundingBox bbox = 2;
+            }
+
+            uint32 page = 1;
+            string sentence = 2;
+            uint32 seq_dist = 3;
+            float distance_from_bottom = 4;
+            repeated WordBoundingBox blue_words = 5;
+            repeated WordBoundingBox red_words = 6;
+        }
+
+        message Image {
+            option (python_data_class) = "bp_forjerry.miner_dataclasses.Image";
+
+            uint32 page = 1;
+            uint32 seq_id = 2;
+            BoundingBox bbox = 3;
+            string name = 4;
+            uint32 src_width = 5;
+            uint32 src_height = 6;
+            google.protobuf.BoolValue image_mask = 7;
+            uint32 bits = 8;
+            repeated string color_space = 9;
+            repeated float matrix = 10;
+            sint64 stream_length = 11;
+            uint32 stream_obj_id = 12;
+        }
+
+        message Curve {
+            option (python_data_class) = "bp_forjerry.miner_dataclasses.Curve";
+
+            message Point {
+                option (python_data_class) = "bp_forjerry.miner_dataclasses.Point";
+
+                float x = 1;
+                float y = 2;
+            }
+
+            message Color {
+                option (python_data_class) = "bp_forjerry.miner_dataclasses.Color";
+
+                enum ColorType {
+                    FLOAT = 0;
+                    STRING = 1;
+                }
+
+                ColorType type = 1;
+                string value = 2;
+            }
+
+            enum CurveType {
+                CURVE = 0;
+                LINE = 1;
+                RECTANGLE = 2;
+            }
+
+            uint32 page = 1;
+            uint32 seq_id = 2;
+            BoundingBox bbox = 3;
+            CurveType curve_type = 4;
+            bool even_odd = 5;
+            bool fill = 6;
+            float line_width = 7;
+            bool stroke = 8;
+            repeated Color non_stroking_color = 9;
+            repeated Color stroking_color = 10;
+            repeated Point points = 11;
+        }
+
+        message Char {
+            option (python_data_class) = "bp_forjerry.miner_dataclasses.Char";
+
+            uint32 page = 1;
+            uint32 seq_id = 2;
+            BoundingBox bbox = 3;
+            string char = 4;
+            float adv = 5;
+            repeated float matrix = 6;
+        }
+
+        message Text {
+            option (python_data_class) = "bp_forjerry.miner_dataclasses.Text";
+
+            uint32 page = 1;
+            uint32 seq_id = 2;
+            BoundingBox bbox = 3;
+            string text = 4;
+            string font_name = 5;
+            uint32 render_style = 6;
+            bool upright = 7;
+            google.protobuf.StringValue cs_name = 8;
+            google.protobuf.UInt32Value cs_components = 9;
+            repeated Char chars = 10;
+        }
+
+        message MarkedContent {
+            option (python_data_class) = "bp_forjerry.miner_dataclasses.MarkedContent";
+
+            enum Type {
+                POINT = 0;
+                SEQUENCE = 1;
+            }
+
+            uint32 page = 1;
+            uint32 seq_id = 2;
+            BoundingBox bbox = 3;
+            string name = 4;
+            Type type = 5;
+            map<string, string> properties = 6;
+            repeated Text tagged_text = 7;
+        }
+
+        message Annotation {
+            option (python_data_class) = "bp_forjerry.miner_dataclasses.Annotation";
+
+            uint32 page = 1;
+            uint32 seq_id = 2;
+            BoundingBox bbox = 3;
+            google.protobuf.StringValue subtype = 4;
+            google.protobuf.StringValue text = 5;
+        }
+
+        message VatNumber {
+            option (python_data_class) = "bp_forjerry.static.vat_number_detection.VatNumber";
+
+            uint32 page = 1;
+            string text = 2;
+            BoundingBox bbox = 3;
+            bool validated = 4;
+        }
+
+        message VisualRepresentation {
+            option (python_data_class) = "bp_forjerry.representation.digital_pdf_representation.VisualRepresentation";
+            repeated float letter_representation = 1;
+        }
+
+        message AccountNumber {
+            option (python_data_class) = "bp_forjerry.static.bank_account_number.AccountNumber";
+
+            enum AccountType {
+                IBAN = 0;
+                CZECH_NATIONAL = 1;
+            }
+
+            uint32 page = 1;
+            string text = 2;
+            BoundingBox bbox = 3;
+            bool validated = 4;
+            AccountType type = 5;
+        }
+
+        uint32 page_id = 1;
+        uint32 obj_id = 2;
+        BoundingBox layout_bbox = 3;
+        bool is_scanned = 4;
+        bool is_scanned_with_ocr = 5;
+        repeated Annotation annotations = 6;
+        repeated Image images = 7;
+        repeated Curve curves = 8;
+        repeated Curve lines = 9;
+        repeated Curve rectangles = 10;
+        repeated Text texts = 11;
+        repeated MarkedContent marked_contents = 12;
+        repeated TextAppend word_appends = 13;
+        repeated Overlap word_overlaps = 14;
+        map<string, uint32> char_hist = 15;
+        repeated VatNumber vat_numbers = 16;
+        VisualRepresentation visual_representation = 17;
+        repeated AccountNumber account_numbers = 18;
+        google.protobuf.StringValue visual_class = 19;
+        google.protobuf.StringValue attribution_key = 20;
+        AccountNumber recognized_account_number = 21;
+    }
+
+    message StreamOperations {
+        option (python_data_class) = "bp_forjerry.static.stream_dataclasses.StreamOperations";
+
+        message StreamOperation {
+            option (python_data_class) = "bp_forjerry.static.stream_dataclasses.StreamOperation";
+
+            message StreamOperand {
+                option (python_data_class) = "bp_forjerry.static.stream_dataclasses.StreamOperand";
+
+                string type = 1;
+                string value = 2;
+            }
+
+            string operator = 1;
+            repeated StreamOperand operands = 2;
+        }
+
+        uint32 obj_id = 1;
+        repeated StreamOperation operations = 2;
+    }
+
+    message StreamWhitespaces {
+        option (python_data_class) = "bp_forjerry.static.stream_dataclasses.StreamWhitespaces";
+
+        uint32 obj_id = 1;
+        repeated string whitespaces = 2;
+    }
+
+    message ObjPos {
+        option (python_data_class) = "bp_forjerry.static.byte_offset_extraction.ObjPos";
+
+        uint32 byte_pos = 1;
+        uint32 obj_id = 2;
+        uint32 gen_no = 3;
+    }
+
+    message PdfCatalog {
+        option (python_data_class) = "bp_forjerry.structure.catalog.PdfCatalog";
+
+        message Xrefs {
+            option (python_data_class) = "bp_forjerry.structure.catalog.Xrefs";
+
+            message Xref {
+                option (python_data_class) = "bp_forjerry.structure.catalog.Xref";
+
+                uint32 obj_id = 1;
+                uint32 gen = 2;
+                uint32 pos = 3;
+                google.protobuf.UInt32Value stream_id = 4;
+            }
+
+            string pdf_miner_type = 1;
+            repeated Xref xrefs = 2;
+            string json_trailer = 3;
+        }
+
+        map<uint32, string> json_catalog = 1;
+        repeated Xrefs xrefs = 2;
+    }
+
+    SampleId sample_id = 1;
+    string sha256 = 2;
+    uint64 file_length = 3;
+    bool is_edi = 4;
+    bool is_generated_with_preview = 5;
+    bool is_generated_with_preview_print_to_pdf = 6;
+    repeated bytes pdf_comment_lines = 7;
+    repeated Page pages = 8;
+    repeated StreamOperations stream_operations = 9;
+    repeated StreamWhitespaces stream_whitespaces = 10;
+    repeated ObjPos obj_positions = 11;
+    repeated MultiObj multi_objs = 12;
+    PdfCatalog pdf_catalog = 13;
+    map<string, bytes> signed_bytes_digests = 14;
+
+}
