@@ -5,5 +5,4 @@ version = "0.1.0"
 
 [deps]
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
-GenModels = "316c64c6-6a49-11e9-07fe-e73d6c9df589"
 ProtoBuf = "3349acd9-ac6a-5e09-bcdb-63829b23a429"
