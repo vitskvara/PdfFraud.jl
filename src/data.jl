@@ -26,12 +26,52 @@ include(joinpath(proto_path, "google.jl"))
 include(joinpath(proto_path, "sample_pb.jl"))
 
 
+"""
+	read_pb(fs::String)
+
+Reads the whole ProtoBuffer data object from file. 
+"""
 function read_pb(fs::String)
 	open(fs) do f
 		readproto(f, PdfSampleRaw())
 	end
 end
 
-fs = "/home/vit/vyzkum/bulleproof/pdf_experiment/data/uloz_to_2019_11_05/protos/ff953f62f5739a910f96465c34367e31f6f4fdc112b8a27f66a7d88dd519ec91.pb"
+_hostname = gethostname()
+proto_path = ""
+extracted_data = ""
+if _hostname == "vit-ThinkPad-E470"
+	proto_path = "/home/vit/vyzkum/bulleproof/pdf_experiment/data/uloz_to_2019_11_05/"
+	extracted_data = joinpath(proto_path, "extracted_representations/data.jld2")
+else
+	@warn "ProtoBuffer data path is not known on this system!"
+end
 
+"""
+	visual_representation(pdf::PdfSampleRaw[, pageid])
+
+Extracts the raw representation from the PdfSampleRaw object `pdf`.
+"""
 visual_representation(pdf::PdfSampleRaw, pageid::Int) = pdf.pages[pageid].visual_representation.letter_representation
+function visual_representation(pdf::PdfSampleRaw) 
+	x = []
+	for i in 1:length(pdf.pages)
+		# we have to do it this way because some pages have empty representations
+		y = visual_representation(pdf, i)
+		if length(y) != 0
+			push!(x, y)
+		end
+	end
+	hcat(x...)
+end
+
+"""
+	reshape_representation(vector, shape=(48,64))
+	reshape_representation(matrix, shape=(48,64))
+
+Given a vector/matrix of floats, transforms this into the correct shape and orientation as a 3D tensor of
+pdf representations.
+"""
+reshape_representation(vec::Vector, shape=(48,64)) = rotl90(reshape(vec, shape...))
+reshape_representation(mat::Matrix, shape=(48,64)) = 
+	cat([reshape_representation(mat[:,i], shape) for i in 1:size(mat,2)]..., dims = 3)
