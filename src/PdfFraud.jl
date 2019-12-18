@@ -10,6 +10,7 @@ using ProgressMeter
 using ConditionalDists
 using IPMeasures
 using JLD2, FileIO
+using MLDataPattern
 
 export PdfSampleRaw
 
