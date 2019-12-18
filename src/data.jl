@@ -41,7 +41,13 @@ _hostname = gethostname()
 proto_path = ""
 extracted_data = ""
 if _hostname == "vit-ThinkPad-E470"
-	proto_path = "/home/vit/vyzkum/bulleproof/pdf_experiment/data/uloz_to_2019_11_05/"
+	proto_path = "/home/vit/vyzkum/bulletproof/pdf_experiment/data/uloz_to_2019_11_05/"
+elseif	_hostname == "gpu-node"
+	proto_path = "/compass/home/skvara/vyzkum/bulletproof/pdf_experiment/data/uloz_to_2019_11_05/"
+elseif	_hostname == "tarbik.utia.cas.cz"
+	proto_path = "/home/skvara/work/bulletproof/pdf_experiment/data/uloz_to_2019_11_05/"
+end
+if proto_path != ""
 	extracted_data = joinpath(proto_path, "extracted_representations/data.jld2")
 else
 	@warn "ProtoBuffer data path is not known on this system!"
