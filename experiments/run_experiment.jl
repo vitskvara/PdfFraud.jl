@@ -52,7 +52,7 @@ s = ArgParseSettings()
     	arg_type = Int
     	help = "number of training epochs"
     "--batchsize"
-    	default = 64
+    	default = 128
     	arg_type = Int
     	help = "batch size"
     "--beta"
@@ -85,6 +85,7 @@ batchsize = parsed_args["batchsize"]
 β = parsed_args["beta"]
 savepath = parsed_args["savepath"]
 save_freq = parsed_args["save-frequency"]
+save_freq = (save_freq == nothing) ? save_freq : parse(Int, save_freq)
 test = parsed_args["test"]
 if test
 	batchsize = 2
