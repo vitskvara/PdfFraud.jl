@@ -27,7 +27,7 @@ prints the current progress.
 """
 function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE, 
 							 test_data::AbstractArray, h::MVHistory, elbox::Function, 
-							 save_frequency::Int, filename::String)
+							 filename::String; save_frequency = nothing)
 	iter = 0
 	function cb()
 		# get losses
@@ -43,7 +43,7 @@ function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE
 	
 		# save the model
 		iter += 1
-		if iter%save_frequency == 0
+		if save_frequency != nothing && iter%save_frequency == 0
 			save_checkpoint(filename, model, h)
 		end
 	end

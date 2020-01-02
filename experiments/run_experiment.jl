@@ -63,6 +63,9 @@ s = ArgParseSettings()
     	default = ""
     	arg_type = String
     	help = "where should the model be saved"
+    "--save-frequency"
+    	default = nothing
+    	help = "how often (in a number of iterations) should a model be saved"
     "--test"
     	action = :store_true
     	help = "test run"
@@ -81,9 +84,11 @@ nepochs = parsed_args["nepochs"]
 batchsize = parsed_args["batchsize"]
 β = parsed_args["beta"]
 savepath = parsed_args["savepath"]
+save_freq = parsed_args["save-frequency"]
 test = parsed_args["test"]
 if test
 	batchsize = 2
+	savepath = "./test"
 end
 
 # get data
@@ -110,15 +115,19 @@ model = VAE(ldim, enc_dist, dec_dist) |> gpu
 # create stuff for training
 loss(x) = PdfFraud.elbo(model, x, β=β)
 opt = ADAM(η)
-data = [(gpu(Array(x)),) for x in RandomBatches(X, batchsize, ceil(Int, size(X,4)/batchsize))];
-validation_data = gpu(Array(collect(RandomBatches(X, batchsize, 1))[1]));
+if !test
+	data = [(gpu(Array(x)),) for x in RandomBatches(X, batchsize, ceil(Int, size(X,4)/batchsize))];
+	validation_data = gpu(Array(collect(RandomBatches(X, batchsize, 1))[1]));
+else
+	data = [(X[:,:,:,1:batchsize],) for _ in 1:100];
+	validation_data = data[1][1];
+end
 h = MVHistory()
 prog = Progress(nepochs*length(data))
-save_freq = 50 # how often should the model be saved
 mkpath(savepath)
 filename = joinpath(savepath, "$(now()).bson")
 cb = PdfFraud.history_progress_cb(prog, model, validation_data, h, loss, 
-	save_freq, filename)
+	filename; save_frequency = save_freq)
 
 # train
 Flux.@epochs nepochs Flux.train!(loss, params(model), data, opt, cb = cb)
