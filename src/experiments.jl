@@ -25,8 +25,10 @@ reconstruct(x) = reconstruct(model, x)
 Returns a callback function that stores loss values in the history object and also
 prints the current progress.
 """
-function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE, test_data::AbstractArray,
-							 h::MVHistory, elbox::Function)
+function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE, 
+							 test_data::AbstractArray, h::MVHistory, elbox::Function, 
+							 save_frequency::Int, filename::String)
+	iter = 0
 	function cb()
 		# get losses
 		elbo = elbox(test_data) |> cpu
@@ -38,6 +40,12 @@ function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE
 
 		# update the progress bar
 		next!(prog, showvalues = [(k, ntuple[k]) for k in keys(ntuple)])
+	
+		# save the model
+		iter += 1
+		if iter%save_frequency == 0
+			save_checkpoint(filename, model, h)
+		end
 	end
 end
 

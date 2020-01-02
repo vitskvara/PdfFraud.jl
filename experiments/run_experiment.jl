@@ -4,7 +4,6 @@ using GMExtensions
 using ConditionalDists
 using PdfFraud
 using JLD2
-using PyPlot
 using FileIO
 using Flux
 using CuArrays
@@ -19,6 +18,7 @@ if length(ARGS) == 0
 	push!(ARGS, "2")
 	push!(ARGS, "2")
 	push!(ARGS, "4")
+	push!(ARGS, "--test")
 end
 
 # parse arguments
@@ -63,6 +63,9 @@ s = ArgParseSettings()
     	default = ""
     	arg_type = String
     	help = "where should the model be saved"
+    "--test"
+    	action = :store_true
+    	help = "test run"
 end
 parsed_args = parse_args(ARGS, s)
 
@@ -78,10 +81,14 @@ nepochs = parsed_args["nepochs"]
 batchsize = parsed_args["batchsize"]
 β = parsed_args["beta"]
 savepath = parsed_args["savepath"]
+test = parsed_args["test"]
+if test
+	batchsize = 2
+end
 
 # get data
 X, sha256, page_nums = PdfFraud.load_pdf_data()
-X = X |> gpu
+X = X |> gpu;
 
 # construct the convolutional VAE model
 (h, w, c) = size(X)[1:3]
@@ -90,28 +97,28 @@ vecdim = reduce(*, (h,w,c))
 T = Float32
 
 encoder = GMExtensions.conv_encoder((h, w, c), ldim*2, kernelsizes, channels, scalings; 
-	densedims = densedims) |> gpu
+	densedims = densedims)
 enc_dist = CMeanVarGaussian{DiagVar}(encoder)
 
 decoder = GMExtensions.conv_decoder((h, w, c), ldim, reverse(kernelsizes), 
 	reverse(channels), reverse(scalings); densedims = densedims, vec_output = true,
-	vec_output_dim = vecdim + 1) |> gpu
+	vec_output_dim = vecdim + 1)
 dec_dist = CMeanVarGaussian{ScalarVar}(decoder)
 
-model = VAE(ldim, enc_dist, dec_dist)
+model = VAE(ldim, enc_dist, dec_dist) |> gpu
 
 # create stuff for training
 loss(x) = PdfFraud.elbo(model, x, β=β)
 opt = ADAM(η)
-data = RandomBatches(X, batchsize, ceil(Int, size(X,4)/batchsize))
+data = [(gpu(Array(x)),) for x in RandomBatches(X, batchsize, ceil(Int, size(X,4)/batchsize))];
+validation_data = gpu(Array(collect(RandomBatches(X, batchsize, 1))[1]));
 h = MVHistory()
 prog = Progress(nepochs*length(data))
-cb = PdfFraud.history_progress_cb(prog, model, x, h, loss)
+save_freq = 50 # how often should the model be saved
 mkpath(savepath)
 filename = joinpath(savepath, "$(now()).bson")
+cb = PdfFraud.history_progress_cb(prog, model, validation_data, h, loss, 
+	save_freq, filename)
 
 # train
 Flux.@epochs nepochs Flux.train!(loss, params(model), data, opt, cb = cb)
-
-# and save the model
-save_checkpoint(filename, model, h)
