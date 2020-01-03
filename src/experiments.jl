@@ -26,8 +26,7 @@ Returns a callback function that stores loss values in the history object and al
 prints the current progress.
 """
 function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE, 
-							 test_data::AbstractArray, h::MVHistory, elbox::Function, 
-							 filename::String; save_frequency = nothing)
+							 test_data::AbstractArray, h::MVHistory, elbox::Function)
 	iter = 0
 	function cb()
 		# get losses
@@ -42,10 +41,10 @@ function history_progress_cb(prog::Progress, model::GenerativeModels.AbstractVAE
 		next!(prog, showvalues = [(k, ntuple[k]) for k in keys(ntuple)])
 	
 		# save the model
-		iter += 1
-		if save_frequency != nothing && iter%save_frequency == 0
-			save_checkpoint(filename, model, h)
-		end
+		#iter += 1
+		#if save_frequency != nothing && iter%save_frequency == 0
+		#	save_checkpoint(filename, model, h)
+		#end
 	end
 end
 

@@ -12,6 +12,8 @@ using ValueHistories
 using ProgressMeter
 using ArgParse 
 using MLDataPattern
+using DrWatson
+quickactivate(dirname(dirname(pathof(PdfFraud)))) # this is so that DrWatson saves all the info
 
 # this is for running the script from REPL - default values
 if length(ARGS) == 0
@@ -64,8 +66,9 @@ s = ArgParseSettings()
     	arg_type = String
     	help = "where should the model be saved"
     "--save-frequency"
-    	default = nothing
-    	help = "how often (in a number of iterations) should a model be saved"
+    	default = 1
+    	arg_type = Int
+    	help = "how often (in a number of epochs) should a model be saved"
     "--test"
     	action = :store_true
     	help = "test run"
@@ -85,7 +88,6 @@ batchsize = parsed_args["batchsize"]
 β = parsed_args["beta"]
 savepath = parsed_args["savepath"]
 save_freq = parsed_args["save-frequency"]
-save_freq = (save_freq == nothing) ? save_freq : parse(Int, save_freq)
 test = parsed_args["test"]
 if test
 	batchsize = 2
@@ -124,11 +126,29 @@ else
 	validation_data = data[1][1];
 end
 h = MVHistory()
-prog = Progress(nepochs*length(data))
 mkpath(savepath)
-filename = joinpath(savepath, "$(now()).bson")
-cb = PdfFraud.history_progress_cb(prog, model, validation_data, h, loss, 
-	filename; save_frequency = save_freq)
+tstart = "$(now())"
+iepoch = 0
 
 # train
-Flux.@epochs nepochs Flux.train!(loss, params(model), data, opt, cb = cb)
+function train_epoch(model, history, experiment_args)
+	# setup callback
+	prog = Progress(length(data))
+	global iepoch += 1
+	filename = joinpath(savepath, tstart*"_epoch-$(iepoch).bson")
+	cb = PdfFraud.history_progress_cb(prog, model, validation_data, history, loss)
+
+	# train 
+	Flux.train!(loss, params(model), data, opt, cb = cb)
+
+	# save model
+	if iepoch%save_freq == 0
+		model = model |> cpu
+	    d = @dict model history experiment_args
+
+	    @info "Saving checkpoint at $filename"
+	    DrWatson.tagsave(filename, d, safe=true)
+	end
+end
+Flux.@epochs nepochs train_epoch(model, h, parsed_args)
+
