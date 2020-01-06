@@ -95,7 +95,7 @@ if test
 end
 
 # get data
-X, sha256, page_nums = PdfFraud.load_pdf_data()
+X, labels, sha256, page_nums = PdfFraud.load_pdf_data()
 X = X |> gpu;
 
 # construct the convolutional VAE model

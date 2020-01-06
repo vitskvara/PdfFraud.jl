@@ -16,7 +16,6 @@ end
 
 outfile = joinpath(PdfFraud.proto_path, "extracted_representations/data.jld2")
 
-
 sha256 = []
 representations = []
 N = length(protos)
@@ -30,4 +29,9 @@ for (i, proto) in enumerate(protos)
 	next!(p)
 end
 
-@save outfile sha256 representations
+# also get labels
+indexf = joinpath(PdfFraud.proto_path, "index.json")
+labelf = "/home/vit/vyzkum/bulletproof/pdf_experiment/gt-clustering-pdfs.txt"
+labels, labeled_sha256, filenames = PdfFraud.get_labels(sha256, indexf, labelf);
+
+@save outfile sha256 representations labels

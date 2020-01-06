@@ -81,3 +81,45 @@ pdf representations.
 reshape_representation(vec::Vector, shape=(48,64)) = rotl90(reshape(vec, shape...))
 reshape_representation(mat::Matrix, shape=(48,64)) = 
 	cat([reshape_representation(mat[:,i], shape) for i in 1:size(mat,2)]..., dims = 3)
+
+"""
+	get_labels([sha256::Vector, ]index_file::String, label_file::String)
+
+Get labels from 2 files. Possibly filter them with a given vector of sha256 strings. 
+Returns a tuple of (labels, sha256, filenames).
+"""
+function get_labels(index_file::String, label_file::String)
+	# get the index
+	f = open(index_file);
+	index_entries = map(JSON.parse, readlines(f));
+	close(f)
+	sha256 = map(x -> x["sha256"], index_entries);
+	filenames = map(x -> x["original_name"], index_entries);
+	
+	# get the labels
+	labeldata = CSV.read(label_file, header=[:label, :file]);
+
+	# connect labels via filenames
+	function filename2label(filename)
+		label = (filter(row -> row[:file] == filename, labeldata))[!,:label]
+		return (length(label) > 0) ? label[1] : nothing
+	end 
+
+	map(filename2label, filenames), sha256, filenames
+end
+function get_labels(sha256::Vector, index_file::String, label_file::String)
+	# get the connected labelels and shas from the two files
+	labels, labeled_sha256, labeled_filenames = get_labels(index_file, label_file)
+
+	# connect labels via sha256
+	function sha2label(sha)
+		label = labels[labeled_sha256 .== sha]
+		return length(label) > 0 ? label[1] : nothing
+	end
+	function sha2filename(sha)
+		filename = labeled_filenames[labeled_sha256 .== sha]
+		return length(filename) > 0 ? filename[1] : nothing
+	end
+	
+	map(sha2label, sha256), sha256, map(sha2filename, sha256)
+end

@@ -58,6 +58,7 @@ function load_pdf_data()
 	extracted_data = load(PdfFraud.extracted_data)
 	representations = extracted_data["representations"]
 	sha256 = extracted_data["sha256"]
+	labels = extracted_data["labels"]
 
 	# this has to be sone in this way, otherwise stack overflow errs
 	lens = map(x->size(x,3), representations)
@@ -66,5 +67,9 @@ function load_pdf_data()
 	for (i,representation) in enumerate(representations)
 		X[:,:,:,(inds[i]-lens[i]+1):inds[i]] = reshape(representation, 64, 48, 1, :)
 	end
-	X, sha256, lens
+	
+	# also expand labels by page
+	labels_x = vcat(map(x -> repeat([x[1]], x[2]), zip(labels, lens))...)
+	
+	X, labels_x, sha256, lens
 end

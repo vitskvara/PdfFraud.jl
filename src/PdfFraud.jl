@@ -9,7 +9,7 @@ using ValueHistories
 using ProgressMeter
 using ConditionalDists
 using IPMeasures
-using JLD2, FileIO
+using JLD2, FileIO, JSON, CSV
 using MLDataPattern
 
 export PdfSampleRaw
