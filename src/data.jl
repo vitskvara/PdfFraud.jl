@@ -42,7 +42,7 @@ proto_path = ""
 extracted_data = ""
 if _hostname == "vit-ThinkPad-E470"
 	proto_path = "/home/vit/vyzkum/bulletproof/pdf_experiment/data/uloz_to_2019_11_05/"
-elseif	_hostname == "gpu-node"
+elseif	_hostname in ["gpu-node", "gpu-titan"]
 	proto_path = "/compass/home/skvara/vyzkum/bulletproof/pdf_experiment/data/uloz_to_2019_11_05/"
 elseif	_hostname == "tarbik.utia.cas.cz"
 	proto_path = "/home/skvara/work/bulletproof/pdf_experiment/data/uloz_to_2019_11_05/"

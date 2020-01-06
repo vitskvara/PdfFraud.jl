@@ -91,8 +91,11 @@ save_freq = parsed_args["save-frequency"]
 test = parsed_args["test"]
 if test
 	batchsize = 2
-	savepath = "./test"
+	savepath = "test/models"
 end
+savepath = (length(savepath) > 0 && savepath[1] == "/") ? savepath : 
+	joinpath(PdfFraud.experiment_path, savepath)
+mkpath(savepath)
 
 # get data
 X, labels, sha256, page_nums = PdfFraud.load_pdf_data()
@@ -126,7 +129,6 @@ else
 	validation_data = data[1][1];
 end
 h = MVHistory()
-mkpath(savepath)
 tstart = "$(now())"
 iepoch = 0
 

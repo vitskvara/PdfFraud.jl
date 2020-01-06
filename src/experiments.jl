@@ -1,3 +1,13 @@
+_hostname = gethostname()
+experiment_path = ""
+if _hostname == "vit-ThinkPad-E470"
+	experiment_path = "/home/vit/vyzkum/bulletproof/pdf_experiment/experiments"
+elseif	_hostname in ["gpu-node", "gpu-titan"]
+	experiment_path = "/compass/home/skvara/vyzkum/bulletproof/pdf_experiment/experiments"
+elseif	_hostname == "tarbik.utia.cas.cz"
+	experiment_path = "/home/skvara/work/bulletproof/pdf_experiment/experiments"
+end
+
 """
 	elbo(model, x[; β])
 
