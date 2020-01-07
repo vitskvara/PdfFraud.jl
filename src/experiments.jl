@@ -83,3 +83,37 @@ function load_pdf_data()
 	
 	X, labels_x, sha256, lens
 end
+
+"""
+	save_model(filename, model, history[, experiment_args])
+"""
+function save_model(filename::String, model::GenerativeModels.AbstractGM, 
+					history::MVHistory, experiment_args::Dict=Dict())
+	model = model |> cpu
+    d = @dict model history experiment_args
+
+    @info "Saving checkpoint at $filename"
+    DrWatson.tagsave(filename, d, safe=true)
+end
+
+"""
+	load_model(filename)
+"""
+function load_model(filename::String)
+	@info "Loading checkpoint from $filename"
+    res = BSON.load(filename)
+    res[:model], res[:history], res[:experiment_args]
+end
+
+"""
+	encode(model::GenerativeModels.AbstractVAE, X::AbstractArray, 
+	batchsize::Int, tf::Function)
+
+Encode `X` in batches via encoder of `model` and a given function (e.g. mean/rand).
+"""
+function encode(model::GenerativeModels.AbstractVAE, X::AbstractArray, 
+	batchsize::Int, tf::Function)
+	s = size(X, 4)
+	hcat(map(i->tf(model.encoder, X[:,:,:,(i-1)*batchsize+1:min(i*batchsize, s)]), 
+		1:ceil(Int, s/batchsize))...)
+end

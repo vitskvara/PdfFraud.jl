@@ -91,10 +91,12 @@ save_freq = parsed_args["save-frequency"]
 test = parsed_args["test"]
 if test
 	batchsize = 2
-	savepath = "test/models"
+	savepath = "test"
 end
+
+# prepare the savepath
 savepath = (length(savepath) > 0 && savepath[1] == "/") ? savepath : 
-	joinpath(PdfFraud.experiment_path, savepath)
+	joinpath(PdfFraud.experiment_path, savepath, "models")
 mkpath(savepath)
 
 # get data
@@ -145,11 +147,7 @@ function train_epoch(model, history, experiment_args)
 
 	# save model
 	if iepoch%save_freq == 0
-		model = model |> cpu
-	    d = @dict model history experiment_args
-
-	    @info "Saving checkpoint at $filename"
-	    DrWatson.tagsave(filename, d, safe=true)
+		PdfFraud.save_model(filename, model, history, experiment_args)
 	end
 end
 Flux.@epochs nepochs train_epoch(model, h, parsed_args)
