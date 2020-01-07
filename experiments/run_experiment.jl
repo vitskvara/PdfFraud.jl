@@ -130,6 +130,7 @@ else
 	data = [(X[:,:,:,1:batchsize],) for _ in 1:100];
 	validation_data = data[1][1];
 end
+@info "Training with $(length(data)) batches of $(batchsize) samples."
 h = MVHistory()
 tstart = "$(now())"
 iepoch = 0
@@ -151,4 +152,3 @@ function train_epoch(model, history, experiment_args)
 	end
 end
 Flux.@epochs nepochs train_epoch(model, h, parsed_args)
-
