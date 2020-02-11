@@ -1,7 +1,7 @@
 # PdfFraud.jl
 Pdf fraud detection with Julia and neural networks.
 
-Reading pdf data from ProtoBuffer file.
+## Reading pdf data from ProtoBuffer file.
 
 ```julia
 using PdfFraud

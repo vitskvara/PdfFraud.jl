@@ -1,5 +1,5 @@
 #!/bin/sh
-LDIM=128
+LDIM=$1
 NEPOCHS=100
 SVPTH=vae_runs/${LDIM}_3
 SF=10
