@@ -105,7 +105,7 @@ X = X |> gpu;
 
 # construct the convolutional VAE model
 (h, w, c) = size(X)[1:3]
-densedims = [256]
+densedims = []
 vecdim = reduce(*, (h,w,c))
 T = Float32
 
