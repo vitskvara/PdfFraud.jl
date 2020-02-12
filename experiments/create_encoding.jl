@@ -28,9 +28,7 @@ end
 parsed_args = parse_args(ARGS, s)
 
 # extract settings from the parsed arguments
-modelpath = parsed_args["modelpath"]
-modelpath = (length(modelpath) > 0 && modelpath[1] == "/") ? modelpath : 
-	joinpath(PdfFraud.experiment_path, modelpath, "models")
+modelpath = abspath(parsed_args["modelpath"])
 reprpath = joinpath(dirname(modelpath), "representations") 
 mkpath(reprpath)
 imodels = parsed_args["imodels"]
