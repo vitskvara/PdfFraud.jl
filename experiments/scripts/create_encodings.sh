@@ -7,5 +7,5 @@ else
 fi
 for p in $MODELPATH/*
 do
-	JULIA_DEPOT_PATH=/home/skvara/.julia /home/skvara/julia-1.3.1/bin/julia ../create_encoding.jl $p
+	JULIA_DEPOT_PATH=/home/skvara/.julia /home/skvara/julia-1.3.1/bin/julia ../create_encoding.jl $p/models
 done
